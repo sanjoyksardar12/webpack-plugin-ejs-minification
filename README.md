@@ -1,0 +1,1 @@
+# webpack-plugin-ejs-minification
