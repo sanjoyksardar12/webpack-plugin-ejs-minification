@@ -3,11 +3,19 @@ var fs = require('fs');
 const path = require("path");
 var minify = require('html-minifier-terser').minify;
 
-function MinifyEJSContent(option) {
-  this.option = option;
+function MinifyEJSContent(config) {
+  this.config = config;
+  this.init();
 }
-
-MinifyEJSContent.prototype.apply = function (compiler, option) {
+MinifyEJSContent.prototype.init=function () {
+  this.config.option = {
+    collapseWhitespace: true,
+    removeComments: true,
+    minifyJS: true,
+    ...(this.config.option ||{})
+  }
+}
+MinifyEJSContent.prototype.apply = function (compiler) {
   compiler.plugin("done",  (compilation, callback)=> {
     function workThrough(dir) {
       const files = fs.readdirSync(dir);
@@ -19,7 +27,7 @@ MinifyEJSContent.prototype.apply = function (compiler, option) {
             if(err){
               console.log(err , " to read file");
             }
-            const updatedContent = minify(data, { collapseWhitespace: true, removeComments: true, minifyJS: true });
+            const updatedContent = minify(data, { });
             fs.writeFile(path.resolve(`${dir + "/"}${filepath}`), updatedContent, (err) => {
               if (err) console.log(err);
               const completeFilePath = `${dir + "/"}${filepath}`;
@@ -29,7 +37,7 @@ MinifyEJSContent.prototype.apply = function (compiler, option) {
         }
       });
     }
-    workThrough(this.option.dirPath);
+    workThrough(this.config.dirPath);
   });
 }
 
